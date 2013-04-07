@@ -7,11 +7,13 @@ import java.util.List;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.hardware.Camera;
+import android.hardware.SensorManager;
 import android.hardware.Camera.PreviewCallback;
 import android.util.Log;
 import android.view.Display;
@@ -63,7 +65,11 @@ class Preview extends SurfaceView implements SurfaceHolder.Callback {
 
 				public void onPreviewFrame(byte[] data, Camera arg1) {
 					
-					
+					System.out.println ("1");
+					Bitmap bitmap = BitmapFactory.decodeByteArray(data, 0,
+							data.length);
+					System.out.println ("2");
+
 					FileOutputStream outStream = null;
 					try {
 						outStream = new FileOutputStream(String.format(

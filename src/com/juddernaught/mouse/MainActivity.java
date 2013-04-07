@@ -8,8 +8,9 @@ import android.app.Activity;
 import android.view.Menu;
 //import org.apache.commons.net.telnet.TelnetClient;
 
-
+import org.apache.http.message.BasicNameValuePair;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -20,25 +21,38 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.ArrayList;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.hardware.Camera;
 import android.hardware.Camera.PictureCallback;
 import android.hardware.Camera.ShutterCallback;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 
 public class MainActivity extends Activity {
 	private static final String TAG = "CameraDemo";
+	InputStream inputStream;
 	Camera camera;
 	Preview preview;
 	Button buttonClick;
 	Button send;
+	public Context c = this;
 	
 	public static boolean created = false;
 	public static Socket socket;
@@ -100,6 +114,8 @@ public class MainActivity extends Activity {
 			public void onClick(View v) {
 				preview.camera.takePicture(shutterCallback, rawCallback,
 						jpegCallback);
+				preview = new Preview(c);
+				((FrameLayout) findViewById(R.id.preview)).addView(preview);
 			}
 		});
 
@@ -134,7 +150,38 @@ public class MainActivity extends Activity {
 				
 			outStream = new FileOutputStream(String.format(
 						"/sdcard/poop.jpg"));
-				outStream.write(data);
+			ByteArrayOutputStream stream = new ByteArrayOutputStream();
+			Bitmap bitmap = BitmapFactory.decodeByteArray(data , 0, data.length);
+			//String image_str = Base64.encodeToString(data, Base64.DEFAULT);
+			System.out.println ("Pixel: " + bitmap.getPixel(1, 1));
+			{
+                Bitmap scaled = Bitmap.createScaledBitmap(bitmap, (int)(bitmap.getWidth() * 0.3), (int)(bitmap.getHeight() * 0.3), false);
+                scaled.compress(Bitmap.CompressFormat.JPEG, 90, stream);
+            }
+
+            System.gc();
+
+            //byte [] byte_arr = stream.toByteArray();
+            String image_str = Base64.encodeToString(data, Base64.DEFAULT);
+            ArrayList nameValuePairs = new ArrayList();
+
+            nameValuePairs.add(new BasicNameValuePair("upfile",image_str));
+
+            try {
+                HttpClient httpclient = new DefaultHttpClient();
+                final String URL = "http://160.39.197.59:8000";
+                HttpPost httppost = new HttpPost(URL);
+                httppost.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+                HttpResponse response = httpclient.execute(httppost);
+                String the_string_response = convertResponseToString(response);
+                Toast.makeText(MainActivity.this, "Response " + the_string_response, Toast.LENGTH_LONG).show();
+            } catch(Exception e){
+                  Toast.makeText(MainActivity
+                          .this, "ERROR " + e.getMessage(), Toast.LENGTH_LONG).show();
+                  System.out.println("Error in http connection "+e.toString());
+                  e.printStackTrace();
+            }
+				//outStream.write(data);
 				outStream.close();
 				Log.d(TAG, "onPictureTaken - wrote bytes: " + data.length);
 			} catch (FileNotFoundException e) {
@@ -146,6 +193,28 @@ public class MainActivity extends Activity {
 			Log.d(TAG, "onPictureTaken - jpeg");
 		}
 	};
+	
+	public String convertResponseToString(HttpResponse response) throws IllegalStateException, IOException{
+		String res = "";
+		StringBuffer buffer = new StringBuffer();
+		inputStream = response.getEntity().getContent();
+		int contentLength = (int) response.getEntity().getContentLength(); //getting content length…..
+		Toast.makeText(MainActivity.this, "contentLength : " + contentLength, Toast.LENGTH_LONG).show();
+		if (contentLength < 0){         }         
+		else{               
+			byte[] data = new byte[512];                
+			int len = 0;                
+			try                {                    
+				while (-1 != (len = inputStream.read(data)) )                    {                        
+					buffer.append(new String(data, 0, len)); //converting to string and appending  to stringbuffer…..                    }                }                catch (IOException e)                {                    e.printStackTrace();                }                try                {                    inputStream.close(); // closing the stream…..                }                catch (IOException e)                {                    e.printStackTrace();                }                res = buffer.toString();     // converting stringbuffer to string…..                Toast.makeText(MainActivity.this, "Result : " + res, Toast.LENGTH_LONG).show();                //System.out.println("Response => " +  EntityUtils.toString(response.getEntity()));
+			}
+		}
+			catch (Exception e) {
+				
+			}
+		}
+		return res;
+		}
 	
 	class RetreiveFeedTask extends AsyncTask<String, Void, String> {
 
