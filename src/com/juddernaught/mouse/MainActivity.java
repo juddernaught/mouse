@@ -6,7 +6,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Activity;
 import android.view.Menu;
-import org.apache.commons.net.telnet.TelnetClient;
+//import org.apache.commons.net.telnet.TelnetClient;
 
 
 import java.io.BufferedReader;
@@ -50,7 +50,7 @@ public class MainActivity extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
-		System.out.println ("YES");
+		/*System.out.println ("YES");
 		 ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 		    NetworkInfo netInfo = cm.getActiveNetworkInfo();
 		    if (netInfo != null && netInfo.isConnected()) {
@@ -58,7 +58,7 @@ public class MainActivity extends Activity {
 		    } else {
 		    	System.out.println ("No");
 		    }
-			System.out.println ("YES");
+			System.out.println ("YES");*/
 
 		preview = new Preview(this);
 		((FrameLayout) findViewById(R.id.preview)).addView(preview);
