@@ -6,16 +6,20 @@ import java.io.IOException;
 import java.util.List;
 
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.drawable.BitmapDrawable;
 import android.hardware.Camera;
 import android.hardware.Camera.PreviewCallback;
 import android.util.Log;
 import android.view.Display;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.View;
 import android.view.WindowManager;
+import android.widget.ImageView;
 
 class Preview extends SurfaceView implements SurfaceHolder.Callback {
 	private static final String TAG = "Preview";
@@ -49,10 +53,17 @@ class Preview extends SurfaceView implements SurfaceHolder.Callback {
         }
 		try {
 			camera.setPreviewDisplay(holder);
-
+			/*View v =this;
+	        ImageView imageView = ((ImageView)v);
+	        Bitmap bitmap = ((BitmapDrawable)imageView.getDrawable()).getBitmap();
+	        for (int i = 0; i < 50; i ++) {
+	        	System.out.println(bitmap.getPixel(i, i));
+	        }*/
 			camera.setPreviewCallback(new PreviewCallback() {
 
 				public void onPreviewFrame(byte[] data, Camera arg1) {
+					
+					
 					FileOutputStream outStream = null;
 					try {
 						outStream = new FileOutputStream(String.format(
